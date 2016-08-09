@@ -54,8 +54,8 @@ func CRUD(group *gin.RouterGroup, handler interface{}) {
 	}
 }
 
-// CRUD set up 6 handlers for this group
-// beside CRUD it includes list and {path}_new
+// CRUDI set up 6 handlers for this group
+// beside CRUD it includes list and init form at path {path}_new
 func CRUDI(path string, handler interface{}, router *gin.Engine, groupHandlers ...gin.HandlerFunc) {
 	group := router.Group(path, groupHandlers...)
 
