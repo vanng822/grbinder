@@ -29,8 +29,8 @@ type DeleteSupported interface {
 	DeleteHandler(*gin.Context)
 }
 
-// CRUD set up 6 handlers for this group
-// beside CRUD it includes  list
+// CRUD set up 5 handlers for this group
+// beside CRUD it includes list
 func CRUD(group *gin.RouterGroup, handler interface{}) {
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
