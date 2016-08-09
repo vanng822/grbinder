@@ -4,6 +4,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// InitSupported binds GET: /path_new for the web, init the form
+type InitSupported interface {
+	InitHandler(*gin.Context)
+}
+
 // CreateSupported binds POST: /path create item
 type CreateSupported interface {
 	CreateHandler(*gin.Context)
@@ -32,6 +37,31 @@ type DeleteSupported interface {
 // CRUD set up 5 handlers for this group
 // beside CRUD it includes list
 func CRUD(group *gin.RouterGroup, handler interface{}) {
+	if handler, ok := handler.(CreateSupported); ok {
+		group.POST("", handler.CreateHandler)
+	}
+	if handler, ok := handler.(ListSupported); ok {
+		group.GET("", handler.ListHandler)
+	}
+	if handler, ok := handler.(TakeSupported); ok {
+		group.GET("/:id", handler.TakeHandler)
+	}
+	if handler, ok := handler.(UpdateSupported); ok {
+		group.PUT("/:id", handler.UpdateHandler)
+	}
+	if handler, ok := handler.(DeleteSupported); ok {
+		group.DELETE("/:id", handler.DeleteHandler)
+	}
+}
+
+// CRUD set up 6 handlers for this group
+// beside CRUD it includes list and {path}_new
+func CRUDI(path string, handler interface{}, router *gin.Engine, groupHandlers ...gin.HandlerFunc) {
+	group := router.Group(path, groupHandlers...)
+
+	if handler, ok := handler.(InitSupported); ok {
+		router.GET(path+"_new", handler.InitHandler)
+	}
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
 	}
