@@ -141,3 +141,9 @@ func BindVerb(group *gin.RouterGroup, handler interface{}) {
 		group.OPTIONS("", handler.OPTIONS)
 	}
 }
+
+// Mix runs BindVerb and CRUB. One has to make sure no collision!
+func Mix(group *gin.RouterGroup, handler interface{}) {
+	BindVerb(group, handler)
+	CRUD(group, handler)
+}
