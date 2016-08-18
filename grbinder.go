@@ -60,7 +60,7 @@ func CRUD(group *gin.RouterGroup, handler interface{}) {
 func CRUDI(group *gin.RouterGroup, handler interface{}) {
 
 	if handler, ok := handler.(InitSupported); ok {
-		router.GET("/:id/new", handler.InitHandler)
+		group.GET("/:id/new", handler.InitHandler)
 	}
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
