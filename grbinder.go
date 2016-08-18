@@ -55,12 +55,12 @@ func CRUD(group *gin.RouterGroup, handler interface{}) {
 }
 
 // CRUDI set up 6 handlers for this group
-// beside CRUD it includes list and init form at path {path}_new
-func CRUDI(path string, handler interface{}, router *gin.Engine, groupHandlers ...gin.HandlerFunc) {
-	group := router.Group(path, groupHandlers...)
+// beside CRUD it includes list and init form at path {path}/:id/new
+// you may call GET path/0/new
+func CRUDI(group *gin.RouterGroup, handler interface{}) {
 
 	if handler, ok := handler.(InitSupported); ok {
-		router.GET(path+"_new", handler.InitHandler)
+		router.GET("/:id/new", handler.InitHandler)
 	}
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
