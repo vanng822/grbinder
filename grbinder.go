@@ -62,21 +62,8 @@ func CRUDI(group *gin.RouterGroup, handler interface{}) {
 	if handler, ok := handler.(InitSupported); ok {
 		group.GET("/:id/new", handler.InitHandler)
 	}
-	if handler, ok := handler.(CreateSupported); ok {
-		group.POST("", handler.CreateHandler)
-	}
-	if handler, ok := handler.(ListSupported); ok {
-		group.GET("", handler.ListHandler)
-	}
-	if handler, ok := handler.(TakeSupported); ok {
-		group.GET("/:id", handler.TakeHandler)
-	}
-	if handler, ok := handler.(UpdateSupported); ok {
-		group.PUT("/:id", handler.UpdateHandler)
-	}
-	if handler, ok := handler.(DeleteSupported); ok {
-		group.DELETE("/:id", handler.DeleteHandler)
-	}
+
+	CRUD(group, handler)
 }
 
 // POSTSupported binds POST: /path
