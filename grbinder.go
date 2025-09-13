@@ -1,7 +1,12 @@
 package grbinder
 
 import (
+	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
+	"github.com/vanng822/gorlock/v2"
 )
 
 // InitSupported binds GET: /path_new for the web, init the form
@@ -34,9 +39,82 @@ type DeleteSupported interface {
 	DeleteHandler(*gin.Context)
 }
 
-// CRUD set up 5 handlers for this group
-// beside CRUD it includes list
-func CRUD(group *gin.RouterGroup, handler any) {
+var entityLock gorlock.Gorlock
+
+func init() {
+	entityLock = gorlock.NewDefaultWaiting().WithSettings(&gorlock.Settings{
+		KeyPrefix:     "grbinder.entity_lock",
+		LockTimeout:   30 * time.Second,
+		RetryTimeout:  10 * time.Second,
+		RetryInterval: 200 * time.Millisecond,
+	})
+}
+
+type Locker interface {
+	Acquire(key string) (bool, error)
+	Unlock(key string) error
+}
+
+type entityLockOptions struct {
+	EnableLock     bool
+	Name           string
+	LockTakeAction bool
+	Locker         Locker
+}
+
+func defaultEntityLockOptions() *entityLockOptions {
+	return &entityLockOptions{
+		EnableLock:     false,
+		Name:           "",
+		LockTakeAction: false,
+		Locker:         entityLock,
+	}
+}
+
+type Option func(*entityLockOptions)
+
+func WithEntityLockEnable(enable bool) Option {
+	return func(options *entityLockOptions) {
+		options.EnableLock = enable
+	}
+}
+
+func WithEntityLockName(name string) Option {
+	return func(options *entityLockOptions) {
+		options.Name = name
+	}
+}
+
+func WithEntityLockLocker(locker Locker) Option {
+	return func(options *entityLockOptions) {
+		options.Locker = locker
+	}
+}
+
+func WithEntityLockTakeAction(LockTakeAction bool) Option {
+	return func(options *entityLockOptions) {
+		options.LockTakeAction = LockTakeAction
+	}
+}
+
+func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler func(*gin.Context)) {
+	// Lock the entity
+	var id = ctx.Param("id")
+	var name = options.Name
+	if name == "" {
+		name = ctx.FullPath()
+	}
+	var key = fmt.Sprintf("%s.%s", name, id)
+	var locked, err = entityLock.Acquire(key)
+	if err != nil || !locked {
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	defer entityLock.Unlock(key)
+	handler(ctx)
+}
+
+func crud(group *gin.RouterGroup, handler any, options *entityLockOptions) {
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
 	}
@@ -44,26 +122,55 @@ func CRUD(group *gin.RouterGroup, handler any) {
 		group.GET("", handler.ListHandler)
 	}
 	if handler, ok := handler.(TakeSupported); ok {
-		group.GET("/:id", handler.TakeHandler)
+		if options.EnableLock && options.LockTakeAction {
+			group.GET("/:id", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, options, handler.TakeHandler)
+			})
+		} else {
+			group.GET("/:id", handler.TakeHandler)
+		}
 	}
 	if handler, ok := handler.(UpdateSupported); ok {
-		group.PUT("/:id", handler.UpdateHandler)
+		if options.EnableLock {
+			group.PUT("/:id", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, options, handler.UpdateHandler)
+			})
+		} else {
+			group.PUT("/:id", handler.UpdateHandler)
+		}
 	}
+
 	if handler, ok := handler.(DeleteSupported); ok {
-		group.DELETE("/:id", handler.DeleteHandler)
+		if options.EnableLock {
+			group.DELETE("/:id", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, options, handler.DeleteHandler)
+			})
+		} else {
+			group.DELETE("/:id", handler.DeleteHandler)
+		}
 	}
+}
+
+// CRUD set up 5 handlers for this group
+// beside CRUD it includes list
+func CRUD(group *gin.RouterGroup, handler any, options ...Option) {
+	var opts = defaultEntityLockOptions()
+	for _, option := range options {
+		option(opts)
+	}
+	crud(group, handler, opts)
 }
 
 // CRUDI set up 6 handlers for this group
 // beside CRUD it includes list and init form at path {path}/:id/new
 // you may call GET path/0/new
-func CRUDI(group *gin.RouterGroup, handler any) {
+func CRUDI(group *gin.RouterGroup, handler any, options ...Option) {
 
 	if handler, ok := handler.(InitSupported); ok {
 		group.GET("/:id/new", handler.InitHandler)
 	}
 
-	CRUD(group, handler)
+	CRUD(group, handler, options...)
 }
 
 // POSTSupported binds POST: /path
