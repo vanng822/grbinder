@@ -45,8 +45,8 @@ func init() {
 	entityLock = gorlock.NewDefaultWaiting().WithSettings(&gorlock.Settings{
 		KeyPrefix:     "grbinder.entity_lock",
 		LockTimeout:   30 * time.Second,
-		RetryTimeout:  10 * time.Second,
-		RetryInterval: 200 * time.Millisecond,
+		RetryTimeout:  2 * time.Second,
+		RetryInterval: 15 * time.Millisecond,
 	})
 }
 
