@@ -36,7 +36,7 @@ type DeleteSupported interface {
 
 // CRUD set up 5 handlers for this group
 // beside CRUD it includes list
-func CRUD(group *gin.RouterGroup, handler interface{}) {
+func CRUD(group *gin.RouterGroup, handler any) {
 	if handler, ok := handler.(CreateSupported); ok {
 		group.POST("", handler.CreateHandler)
 	}
@@ -57,7 +57,7 @@ func CRUD(group *gin.RouterGroup, handler interface{}) {
 // CRUDI set up 6 handlers for this group
 // beside CRUD it includes list and init form at path {path}/:id/new
 // you may call GET path/0/new
-func CRUDI(group *gin.RouterGroup, handler interface{}) {
+func CRUDI(group *gin.RouterGroup, handler any) {
 
 	if handler, ok := handler.(InitSupported); ok {
 		group.GET("/:id/new", handler.InitHandler)
@@ -103,7 +103,7 @@ type OPTIONSSupported interface {
 
 // BindVerb bind funcs with http verbs to a route group
 // be aware that all binds to the same route
-func BindVerb(group *gin.RouterGroup, handler interface{}) {
+func BindVerb(group *gin.RouterGroup, handler any) {
 	if handler, ok := handler.(GETSupported); ok {
 		group.GET("", handler.GET)
 	}
@@ -130,7 +130,7 @@ func BindVerb(group *gin.RouterGroup, handler interface{}) {
 }
 
 // Mix runs BindVerb and CRUB. One has to make sure no collision!
-func Mix(group *gin.RouterGroup, handler interface{}) {
+func Mix(group *gin.RouterGroup, handler any) {
 	BindVerb(group, handler)
 	CRUD(group, handler)
 }
