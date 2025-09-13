@@ -42,11 +42,12 @@ type DeleteSupported interface {
 var entityLock gorlock.Gorlock
 
 func init() {
-	entityLock = gorlock.NewDefaultWaiting().WithSettings(&gorlock.Settings{
+	entityLock = gorlock.NewDefault().WithSettings(&gorlock.Settings{
 		KeyPrefix:     "grbinder.entity_lock",
 		LockTimeout:   30 * time.Second,
 		RetryTimeout:  2 * time.Second,
 		RetryInterval: 15 * time.Millisecond,
+		LockWaiting:   true,
 	})
 }
 
