@@ -107,10 +107,16 @@ func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler f
 	}
 	var key = fmt.Sprintf("%s.%s", name, id)
 	var locked, err = options.Locker.Acquire(key)
-	if err != nil || !locked {
+	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	if !locked {
+		ctx.AbortWithStatus(http.StatusConflict)
+		return
+	}
+
 	defer options.Locker.Unlock(key)
 	handler(ctx)
 }
