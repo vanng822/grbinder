@@ -31,10 +31,10 @@ type entityLockOptions struct {
 	Name           string
 	LockTakeAction bool
 	Locker         Locker
-	EntityIdLockup EntityIdLockup
+	EntityIdLookup EntityIdLookup
 }
 
-type EntityIdLockup func(*gin.Context) string
+type EntityIdLookup func(*gin.Context) string
 
 func defaultEntityLockOptions() *entityLockOptions {
 	return &entityLockOptions{
@@ -42,7 +42,7 @@ func defaultEntityLockOptions() *entityLockOptions {
 		Name:           "",
 		LockTakeAction: false,
 		Locker:         entityLock,
-		EntityIdLockup: func(ctx *gin.Context) string {
+		EntityIdLookup: func(ctx *gin.Context) string {
 			return ctx.Param("id")
 		},
 	}
@@ -77,18 +77,18 @@ func WithEntityLockTakeAction(LockTakeAction bool) Option {
 	}
 }
 
-func WithEntityLockup(entityIdLockup EntityIdLockup) Option {
+func WithEntityLookup(entityIdLookup EntityIdLookup) Option {
 	return func(options *entityLockOptions) {
-		if entityIdLockup == nil {
+		if entityIdLookup == nil {
 			panic("entityIdLockup cannot be nil")
 		}
-		options.EntityIdLockup = entityIdLockup
+		options.EntityIdLookup = entityIdLookup
 	}
 }
 
 func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler func(*gin.Context)) {
 	// Lock the entity
-	var id = options.EntityIdLockup(ctx)
+	var id = options.EntityIdLookup(ctx)
 	var name = options.Name
 	if name == "" {
 		name = ctx.FullPath()
