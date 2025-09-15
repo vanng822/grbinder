@@ -127,3 +127,24 @@ func TestLockEntityConcurrentRejected(t *testing.T) {
 
 	assert.Equal(t, int32(1), counter.Load())
 }
+
+func TestLockEntityIdLockup(t *testing.T) {
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request, _ = http.NewRequest("PUT", testParamPath, nil)
+	params := make([]gin.Param, 0)
+	params = append(params, gin.Param{Key: "id", Value: "123"}, gin.Param{Key: "custom", Value: "456"})
+	c.Params = params
+
+	var opts = defaultEntityLockOptions()
+	opts.Name = "testing"
+	opts.EnableLock = true
+	opts.EntityIdLookup = func(ctx *gin.Context) string {
+		return ctx.Param("custom")
+	}
+
+	lockEntityAndHandle(c, opts, func(c *gin.Context) {
+		val, err := client.Get(context.Background(), "grbinder.entity_lock:testing.456").Result()
+		assert.NoError(t, err)
+		assert.NotNil(t, val)
+	})
+}
