@@ -89,6 +89,11 @@ func WithEntityLookup(entityIdLookup EntityIdLookup) Option {
 func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler func(*gin.Context)) {
 	// Lock the entity
 	var id = options.EntityIdLookup(ctx)
+	// don't have id, don't lock
+	if id == "" {
+		handler(ctx)
+		return
+	}
 	var name = options.Name
 	if name == "" {
 		name = ctx.FullPath()
