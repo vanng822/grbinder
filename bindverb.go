@@ -41,23 +41,60 @@ type OPTIONSSupported interface {
 
 // BindVerb bind funcs with http verbs to a route group
 // be aware that all binds to the same route
-func BindVerb(group *gin.RouterGroup, handler any) {
+// When using entity lock with own entity id lookup func
+// one has to make sure the entity id lookup func works
+// if it returns empty string, no lock will be applied
+func BindVerb(group *gin.RouterGroup, handler any, options ...Option) {
+	var opts = defaultEntityLockOptions()
+	for _, option := range options {
+		option(opts)
+	}
 	if handler, ok := handler.(GETSupported); ok {
-		group.GET("", handler.GET)
+		if opts.EnableLock && opts.LockTakeAction {
+			group.GET("", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, opts, handler.GET)
+			})
+		} else {
+			group.GET("", handler.GET)
+		}
 	}
 	if handler, ok := handler.(POSTSupported); ok {
-		group.POST("", handler.POST)
+		if opts.EnableLock {
+			group.POST("", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, opts, handler.POST)
+			})
+		} else {
+			group.POST("", handler.POST)
+		}
 	}
 
 	if handler, ok := handler.(PUTSupported); ok {
-		group.PUT("", handler.PUT)
+		if opts.EnableLock {
+			group.PUT("", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, opts, handler.PUT)
+			})
+		} else {
+			group.PUT("", handler.PUT)
+		}
 	}
 
 	if handler, ok := handler.(DELETESupported); ok {
-		group.DELETE("", handler.DELETE)
+		if opts.EnableLock {
+			group.DELETE("", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, opts, handler.DELETE)
+			})
+		} else {
+			group.DELETE("", handler.DELETE)
+		}
 	}
 	if handler, ok := handler.(PATCHSupported); ok {
-		group.PATCH("", handler.PATCH)
+		if opts.EnableLock {
+			group.PATCH("", func(ctx *gin.Context) {
+				lockEntityAndHandle(ctx, opts, handler.PATCH)
+			})
+		} else {
+			group.PATCH("", handler.PATCH)
+		}
 	}
 	if handler, ok := handler.(HEADSupported); ok {
 		group.HEAD("", handler.HEAD)

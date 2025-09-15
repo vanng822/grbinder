@@ -73,6 +73,9 @@ func crud(group *gin.RouterGroup, handler any, options *entityLockOptions) {
 
 // CRUD set up 5 handlers for this group
 // beside CRUD it includes list
+// When using entity lock with own entity id lookup func
+// one has to make sure the entity id lookup func works
+// if it returns empty string, no lock will be applied
 func CRUD(group *gin.RouterGroup, handler any, options ...Option) {
 	var opts = defaultEntityLockOptions()
 	for _, option := range options {
@@ -84,6 +87,9 @@ func CRUD(group *gin.RouterGroup, handler any, options ...Option) {
 // CRUDI set up 6 handlers for this group
 // beside CRUD it includes list and init form at path {path}/:id/new
 // you may call GET path/0/new
+// When using entity lock with own entity id lookup func
+// one has to make sure the entity id lookup func works
+// if it returns empty string, no lock will be applied
 func CRUDI(group *gin.RouterGroup, handler any, options ...Option) {
 
 	if handler, ok := handler.(InitSupported); ok {
