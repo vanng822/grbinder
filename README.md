@@ -18,45 +18,54 @@ Gin route binder
 With lock
 
   ```go
-  type entityHandler struct {
+  type calendarHandler struct {
   }
 
-  func (h *entityHandler) CreateHandler(c *gin.Context) {
+  func (h *calendarHandler) CreateHandler(c *gin.Context) {
+    // create calendar
     c.JSON(http.StatusOK, gin.H{"status": "OK"})
   }
   
-  func (h *entityHandler) TakeHandler(c *gin.Context) {
+  func (h *calendarHandler) TakeHandler(c *gin.Context) {
+    // serve calendar
     c.JSON(http.StatusOK, gin.H{"status": "OK"})
   }
 
-  func (h *entityHandler) UpdateHandler(c *gin.Context) {
+  func (h *calendarHandler) UpdateHandler(c *gin.Context) {
+    // update calendar required lock
     c.JSON(http.StatusOK, gin.H{"status": "OK"})
   }
 
-  func (h *entityHandler) DeleteHandler(c *gin.Context) {
+  func (h *calendarHandler) DeleteHandler(c *gin.Context) {
+    // delete calendar required lock
     c.JSON(http.StatusOK, gin.H{"status": "OK"})
   }
   
   router := gin.Default()
   grbinder.CRUD(
-    router.Group("/entity"),
+    router.Group("/calendar"),
     &entityHandler{},
     grbinder.WithEntityLockEnable(true),
-    grbinder.WithEntityLockName("entity"),
+    grbinder.WithEntityLockName("calendar"),
   )
 
-  type entityExtraActionsHandler struct {
+  type calendarSubscribeHandler struct {
   }
   
-  func (h *entityExtraActionsHandler) POST(c *gin.Context) {
-    // Some actions that require entity unchanged when performing
+  func (h *calendarSubscribeHandler) POST(c *gin.Context) {
+    // Lock when subscribing calendar
+    c.JSON(http.StatusOK, gin.H{"status": "OK"})
+  }
+
+  func (h *calendarSubscribeHandler) DELETE(c *gin.Context) {
+    // Lock when unsubscribing calendar
     c.JSON(http.StatusOK, gin.H{"status": "OK"})
   }
 
   grbinder.BindVerb(
-    router.Group("/entity/:id/extra-actions"),
+    router.Group("/calendar/:id/subscribe"),
     &entityExtraActionsHandler{},
     grbinder.WithEntityLockEnable(true),
-    grbinder.WithEntityLockName("entity"),
+    grbinder.WithEntityLockName("calendar"),
   )
   ```
