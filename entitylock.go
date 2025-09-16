@@ -22,7 +22,7 @@ func init() {
 }
 
 type Locker interface {
-	Acquire(key string) (bool, error)
+	Lock(key string) (bool, error)
 	Unlock(key string) error
 }
 
@@ -99,7 +99,7 @@ func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler f
 		name = ctx.FullPath()
 	}
 	var key = fmt.Sprintf("%s.%s", name, id)
-	var locked, err = options.Locker.Acquire(key)
+	var locked, err = options.Locker.Lock(key)
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

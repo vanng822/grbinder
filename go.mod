@@ -4,9 +4,9 @@ go 1.24.1
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/redis/go-redis/v9 v9.11.0
-	github.com/stretchr/testify v1.10.0
-	github.com/vanng822/gorlock/v2 v2.2.0
+	github.com/redis/go-redis/v9 v9.14.0
+	github.com/stretchr/testify v1.11.1
+	github.com/vanng822/gorlock/v2 v2.3.0
 )
 
 require (
