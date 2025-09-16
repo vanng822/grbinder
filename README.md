@@ -44,4 +44,19 @@ With lock
     grbinder.WithEntityLockEnable(true),
     grbinder.WithEntityLockName("entity"),
   )
+
+  type entityExtraActionsHandler struct {
+  }
+  
+  func (h *entityExtraActionsHandler) POST(c *gin.Context) {
+    // Some actions that require entity unchanged when performing
+    c.JSON(http.StatusOK, gin.H{"status": "OK"})
+  }
+
+  grbinder.BindVerb(
+    router.Group("/entity/:id/extra-actions"),
+    &entityExtraActionsHandler{},
+    grbinder.WithEntityLockEnable(true),
+    grbinder.WithEntityLockName("entity"),
+  )
   ```
