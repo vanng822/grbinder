@@ -44,7 +44,7 @@ With lock
   router := gin.Default()
   grbinder.CRUD(
     router.Group("/calendar"),
-    &entityHandler{},
+    &calendarHandler{},
     grbinder.WithEntityLockEnable(true),
     grbinder.WithEntityLockName("calendar"),
   )
@@ -64,7 +64,7 @@ With lock
 
   grbinder.BindVerb(
     router.Group("/calendar/:id/subscribe"),
-    &entityExtraActionsHandler{},
+    &calendarSubscribeHandler{},
     grbinder.WithEntityLockEnable(true),
     grbinder.WithEntityLockName("calendar"),
   )
