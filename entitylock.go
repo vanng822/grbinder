@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/vanng822/gorlock/v2"
 )
 
@@ -34,11 +35,30 @@ type entityLockOptions struct {
 	EntityIdLookup EntityIdLookup
 }
 
+// Limited Context interface of gin.Context
+type Context interface {
+	// in case some object need to be passed to the handler
+	Set(key string, value any)
+
+	// abort options
+	AbortWithStatus(code int)
+	AbortWithStatusJSON(code int, jsonObj any)
+	Abort()
+
+	// for getting entity id
+	// or other params
+	Param(key string) string
+	Bind(obj any) error
+	BindQuery(obj any) error
+	BindJSON(obj any) error
+	MustBindWith(obj any, b binding.Binding) error
+}
+
 // EntityIdLookup defines a func to lookup entity id from context
 // if it returns empty string, no lock will be applied
 // if the context is aborted in the func, the handler will not be called
 // if abort then a status code should be set in the context
-type EntityIdLookup func(*gin.Context) string
+type EntityIdLookup func(Context) string
 
 func defaultEntityLockOptions() *entityLockOptions {
 	return &entityLockOptions{
@@ -46,7 +66,7 @@ func defaultEntityLockOptions() *entityLockOptions {
 		Name:           "",
 		LockTakeAction: false,
 		Locker:         entityLock,
-		EntityIdLookup: func(ctx *gin.Context) string {
+		EntityIdLookup: func(ctx Context) string {
 			return ctx.Param("id")
 		},
 	}
