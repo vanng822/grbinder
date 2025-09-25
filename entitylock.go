@@ -34,6 +34,10 @@ type entityLockOptions struct {
 	EntityIdLookup EntityIdLookup
 }
 
+// EntityIdLookup defines a func to lookup entity id from context
+// if it returns empty string, no lock will be applied
+// if the context is aborted in the func, the handler will not be called
+// if abort then a status code should be set in the context
 type EntityIdLookup func(*gin.Context) string
 
 func defaultEntityLockOptions() *entityLockOptions {
@@ -89,6 +93,14 @@ func WithEntityLookup(entityIdLookup EntityIdLookup) Option {
 func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler func(*gin.Context)) {
 	// Lock the entity
 	var id = options.EntityIdLookup(ctx)
+	// support abort in EntityIdLookup
+	// for example, if the id is not valid or the current user has no access to the entity
+	// the EntityIdLookup can abort the context
+	// so we need to check if the context is aborted here
+	// and return directly
+	if ctx.IsAborted() {
+		return
+	}
 	// don't have id, don't lock
 	if id == "" {
 		handler(ctx)
