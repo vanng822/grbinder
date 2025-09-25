@@ -38,6 +38,7 @@ type entityLockOptions struct {
 // if it returns empty string, no lock will be applied
 // if the context is aborted in the func, the handler will not be called
 // if abort then a status code should be set in the context
+// this is not middleware, so don't call .Next()
 type EntityIdLookup func(*gin.Context) string
 
 func defaultEntityLockOptions() *entityLockOptions {
