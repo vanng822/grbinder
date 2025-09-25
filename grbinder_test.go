@@ -138,7 +138,7 @@ func TestLockEntityIdLockup(t *testing.T) {
 	var opts = defaultEntityLockOptions()
 	opts.Name = "testing"
 	opts.EnableLock = true
-	opts.EntityIdLookup = func(ctx Context) string {
+	opts.EntityIdLookup = func(ctx *gin.Context) string {
 		return ctx.Param("custom")
 	}
 
