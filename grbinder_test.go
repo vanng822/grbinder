@@ -29,7 +29,7 @@ func TestLockEntity(t *testing.T) {
 	params = append(params, gin.Param{Key: "id", Value: "123"})
 	c.Params = params
 
-	var opts = defaultEntityLockOptions()
+	var opts = DefaultEntityLockOptions()
 	opts.Name = "testing"
 	opts.EnableLock = true
 
@@ -47,7 +47,7 @@ func TestLockEntityConcurrentSuccess(t *testing.T) {
 	params = append(params, gin.Param{Key: "id", Value: "123"})
 	c.Params = params
 
-	var opts = defaultEntityLockOptions()
+	var opts = DefaultEntityLockOptions()
 	opts.Name = "testing"
 	opts.EnableLock = true
 
@@ -91,7 +91,7 @@ func TestLockEntityConcurrentRejected(t *testing.T) {
 	params = append(params, gin.Param{Key: "id", Value: "123"})
 	c.Params = params
 
-	var opts = defaultEntityLockOptions()
+	var opts = DefaultEntityLockOptions()
 	opts.Name = "testing"
 	opts.EnableLock = true
 
@@ -135,7 +135,7 @@ func TestLockEntityIdLockup(t *testing.T) {
 	params = append(params, gin.Param{Key: "id", Value: "123"}, gin.Param{Key: "custom", Value: "456"})
 	c.Params = params
 
-	var opts = defaultEntityLockOptions()
+	var opts = DefaultEntityLockOptions()
 	opts.Name = "testing"
 	opts.EnableLock = true
 	opts.EntityIdLookup = func(ctx *gin.Context) string {

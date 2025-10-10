@@ -26,7 +26,7 @@ type Locker interface {
 	Unlock(key string) error
 }
 
-type entityLockOptions struct {
+type EntityLockOptions struct {
 	EnableLock     bool
 	Name           string
 	LockTakeAction bool
@@ -41,8 +41,12 @@ type entityLockOptions struct {
 // this is not middleware, so don't call .Next()
 type EntityIdLookup func(*gin.Context) string
 
-func defaultEntityLockOptions() *entityLockOptions {
-	return &entityLockOptions{
+type EntityLockSupported interface {
+	EntityLockOptions() *EntityLockOptions
+}
+
+func DefaultEntityLockOptions() *EntityLockOptions {
+	return &EntityLockOptions{
 		EnableLock:     false,
 		Name:           "",
 		LockTakeAction: false,
@@ -53,22 +57,22 @@ func defaultEntityLockOptions() *entityLockOptions {
 	}
 }
 
-type Option func(*entityLockOptions)
+type Option func(*EntityLockOptions)
 
 func WithEntityLockEnable(enable bool) Option {
-	return func(options *entityLockOptions) {
+	return func(options *EntityLockOptions) {
 		options.EnableLock = enable
 	}
 }
 
 func WithEntityLockName(name string) Option {
-	return func(options *entityLockOptions) {
+	return func(options *EntityLockOptions) {
 		options.Name = name
 	}
 }
 
 func WithEntityLockLocker(locker Locker) Option {
-	return func(options *entityLockOptions) {
+	return func(options *EntityLockOptions) {
 		if locker == nil {
 			panic("locker cannot be nil")
 		}
@@ -77,13 +81,13 @@ func WithEntityLockLocker(locker Locker) Option {
 }
 
 func WithEntityLockTakeAction(LockTakeAction bool) Option {
-	return func(options *entityLockOptions) {
+	return func(options *EntityLockOptions) {
 		options.LockTakeAction = LockTakeAction
 	}
 }
 
 func WithEntityLookup(entityIdLookup EntityIdLookup) Option {
-	return func(options *entityLockOptions) {
+	return func(options *EntityLockOptions) {
 		if entityIdLookup == nil {
 			panic("entityIdLockup cannot be nil")
 		}
@@ -91,7 +95,7 @@ func WithEntityLookup(entityIdLookup EntityIdLookup) Option {
 	}
 }
 
-func lockEntityAndHandle(ctx *gin.Context, options *entityLockOptions, handler func(*gin.Context)) {
+func lockEntityAndHandle(ctx *gin.Context, options *EntityLockOptions, handler func(*gin.Context)) {
 	// Lock the entity
 	var id = options.EntityIdLookup(ctx)
 	// support abort in EntityIdLookup

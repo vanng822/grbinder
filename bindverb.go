@@ -45,7 +45,13 @@ type OPTIONSSupported interface {
 // one has to make sure the entity id lookup func works
 // if it returns empty string, no lock will be applied
 func BindVerb(group *gin.RouterGroup, handler any, options ...Option) {
-	var opts = defaultEntityLockOptions()
+	var opts *EntityLockOptions
+	if handler, ok := handler.(EntityLockSupported); ok {
+		opts = handler.EntityLockOptions()
+	} else {
+		opts = DefaultEntityLockOptions()
+	}
+
 	for _, option := range options {
 		option(opts)
 	}
