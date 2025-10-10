@@ -34,6 +34,14 @@ type EntityLockOptions struct {
 	EntityIdLookup EntityIdLookup
 }
 
+func (o *EntityLockOptions) With(options ...Option) *EntityLockOptions {
+	clone := *o
+	for _, option := range options {
+		option(&clone)
+	}
+	return &clone
+}
+
 // EntityIdLookup defines a func to lookup entity id from context
 // if it returns empty string, no lock will be applied
 // if the context is aborted in the func, the handler will not be called
