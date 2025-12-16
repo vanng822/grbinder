@@ -3,22 +3,37 @@ package grbinder
 import (
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vanng822/gorlock/v2"
 )
 
-var entityLock gorlock.Gorlock
+var entityLock atomic.Pointer[Locker]
 
-func init() {
-	entityLock = gorlock.NewDefault().WithSettings(&gorlock.Settings{
+func InitDefaultLocker() {
+	gorlock.InitDefaultRedisClient()
+	var locker Locker = gorlock.NewDefault().WithSettings(&gorlock.Settings{
 		KeyPrefix:     "grbinder.entity_lock",
 		LockTimeout:   30 * time.Second,
 		RetryTimeout:  2 * time.Second,
 		RetryInterval: 15 * time.Millisecond,
 		LockWaiting:   true,
 	})
+
+	entityLock.Store(&locker)
+}
+
+func SetDefaultLocker(locker Locker) {
+	entityLock.Store(&locker)
+}
+
+func getDefaultEntityLocker() Locker {
+	if locker := entityLock.Load(); locker != nil {
+		return *locker
+	}
+	panic("Must run InitDefaultLocker first")
 }
 
 type Locker interface {
@@ -58,7 +73,7 @@ func DefaultEntityLockOptions() *EntityLockOptions {
 		EnableLock:     false,
 		Name:           "",
 		LockTakeAction: false,
-		Locker:         entityLock,
+		Locker:         getDefaultEntityLocker(),
 		EntityIdLookup: func(ctx *gin.Context) string {
 			return ctx.Param("id")
 		},
