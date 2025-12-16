@@ -49,7 +49,12 @@ func BindVerb(group *gin.RouterGroup, handler any, options ...Option) {
 	if handler, ok := handler.(EntityLockSupported); ok {
 		opts = handler.EntityLockOptions()
 	} else {
-		opts = DefaultEntityLockOptions()
+		// if has default locker or has options then we need to create opts
+		if len(options) > 0 || hasDefaultEntityLocker() {
+			opts = DefaultEntityLockOptions()
+		} else {
+			opts = nilEntityLockOptions()
+		}
 	}
 
 	for _, option := range options {
