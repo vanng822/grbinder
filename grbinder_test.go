@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"github.com/vanng822/gorlock/v2"
 )
 
 var (
@@ -21,6 +22,32 @@ var (
 		DB:   1, // use default DB
 	})
 )
+
+func TestSetDefaultLockerShouldWork(t *testing.T) {
+	SetDefaultLocker(gorlock.NewDefault().WithSettings(&gorlock.Settings{
+		KeyPrefix:     "grbinder.entity_lock.setdefault",
+		LockTimeout:   30 * time.Second,
+		RetryTimeout:  2 * time.Second,
+		RetryInterval: 15 * time.Millisecond,
+		LockWaiting:   true,
+	}))
+
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request, _ = http.NewRequest("PUT", testParamPath, nil)
+	params := make([]gin.Param, 0)
+	params = append(params, gin.Param{Key: "id", Value: "123"})
+	c.Params = params
+
+	var opts = DefaultEntityLockOptions()
+	opts.Name = "testing"
+	opts.EnableLock = true
+
+	lockEntityAndHandle(c, opts, func(c *gin.Context) {
+		val, err := client.Get(context.Background(), "grbinder.entity_lock.setdefault:testing.123").Result()
+		assert.NoError(t, err)
+		assert.NotNil(t, val)
+	})
+}
 
 func TestLockEntity(t *testing.T) {
 	c, _ := gin.CreateTestContext(httptest.NewRecorder())
