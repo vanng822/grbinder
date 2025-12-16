@@ -18,6 +18,10 @@ Gin route binder
 With lock
 
   ```go
+  func init() {
+    grbinder.InitDefaultLocker()
+  }
+
   type calendarHandler struct {
   }
 
