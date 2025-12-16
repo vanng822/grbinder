@@ -24,6 +24,10 @@ var (
 )
 
 func TestSetDefaultLockerShouldWork(t *testing.T) {
+	defer func() {
+		// restore default locker
+		InitDefaultLocker()
+	}()
 	SetDefaultLocker(gorlock.NewDefault().WithSettings(&gorlock.Settings{
 		KeyPrefix:     "grbinder.entity_lock.setdefault",
 		LockTimeout:   30 * time.Second,
