@@ -33,7 +33,7 @@ func getDefaultEntityLocker() Locker {
 	if locker := entityLock.Load(); locker != nil {
 		return *locker
 	}
-	panic("Must run InitDefaultLocker first")
+	panic("Must run InitDefaultLocker or Set a default Locker first")
 }
 
 type Locker interface {
