@@ -13,7 +13,10 @@ import (
 var entityLock atomic.Pointer[Locker]
 
 func InitDefaultLocker() {
-	gorlock.InitDefaultRedisClient()
+	if !gorlock.HasDefaultRedisClient() {
+		gorlock.InitDefaultRedisClient()
+	}
+
 	var locker Locker = gorlock.NewDefault().WithSettings(&gorlock.Settings{
 		KeyPrefix:     "grbinder.entity_lock",
 		LockTimeout:   30 * time.Second,
