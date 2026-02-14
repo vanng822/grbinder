@@ -36,7 +36,7 @@ func hasDefaultEntityLocker() bool {
 	return entityLock.Load() != nil
 }
 
-func getDefaultEntityLocker() Locker {
+func mustDefaultEntityLocker() Locker {
 	if locker := entityLock.Load(); locker != nil {
 		return *locker
 	}
@@ -80,7 +80,7 @@ func DefaultEntityLockOptions() *EntityLockOptions {
 		EnableLock:     false,
 		Name:           "",
 		LockTakeAction: false,
-		Locker:         getDefaultEntityLocker(),
+		Locker:         mustDefaultEntityLocker(),
 		EntityIdLookup: func(ctx *gin.Context) string {
 			return ctx.Param("id")
 		},
