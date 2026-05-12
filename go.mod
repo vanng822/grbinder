@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/redis/go-redis/v9 v9.19.0
 	github.com/stretchr/testify v1.11.1
-	github.com/vanng822/gorlock/v2 v2.6.0
+	github.com/vanng822/gorlock/v2 v2.7.0
 )
 
 require (
